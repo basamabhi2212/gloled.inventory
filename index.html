@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GloLED Store Inventory System</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #f4f4f4;
+            --dark-color: #333;
+            --light-color: #fff;
+            --border-color: #ddd;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --info-color: #007bff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            background: var(--light-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            background: var(--light-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-info span {
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            padding: 8px 15px;
+            background-color: var(--danger-color);
+            color: var(--light-color);
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .dashboard-content {
+            display: none;
+        }
+
+        .dashboard-content.active {
+            display: block;
+        }
+
+        .nav-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tabs button {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            transition: color 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tabs button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table th, table td {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-group button {
+            width: auto;
+            padding: 10px 20px;
+        }
+
+        .btn-action {
+            width: auto;
+            padding: 8px 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--light-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .toast {
+            background-color: #333;
+            color: var(--light-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            min-width: 250px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+
+        .admin-feature {
+            display: none;
+        }
+
+        #whatsapp-generator {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #whatsapp-generator textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container, .login-container {
+                padding: 15px;
+            }
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .nav-tabs {
+                flex-direction: column;
+            }
+            .nav-tabs button {
+                width: 100%;
+                text-align: center;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-page" class="login-container">
+        <h2>GloLED Store Inventory</h2>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button id="login-btn">Login</button>
+    </div>
+
+    <div id="dashboard-page" class="container dashboard-content">
+        <header>
+            <h1>Inventory Management</h1>
+            <div class="user-info">
+                <span>Welcome, <span id="current-user-name"></span> (<span id="current-user-role"></span>)</span>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <nav class="nav-tabs">
+            <button id="tab-products" class="tab-btn active">Product List</button>
+            <button id="tab-sales" class="tab-btn">Sales List</button>
+            <button id="tab-activity-log" class="tab-btn">Activity Log</button>
+            <button id="tab-whatsapp" class="tab-btn">WhatsApp</button>
+            <button id="tab-admin" class="tab-btn admin-feature">Admin Panel</button>
+        </nav>
+
+        <main class="tab-content">
+            <div id="products-tab" class="tab-pane active">
+                <div class="btn-group">
+                    <button id="add-product-btn" class="btn-action admin-feature">Add Product</button>
+                    <button id="export-products-btn" class="btn-action">Export Stock</button>
+                </div>
+                <div class="table-container">
+                    <table id="products-table">
+                        <thead>
+                            <tr>
+                                <th>Sno</th>
+                                <th>Item Code</th>
+                                <th>Product Name</th>
+                                <th>Product Price</th>
+                                <th>Product Quantity</th>
+                                <th>Remark</th>
+                                <th class="admin-feature">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="sales-tab" class="tab-pane">
+                <div class="btn-group">
+                    <button id="add-sale-btn" class="btn-action">Add New Sale</button>
+                    <button id="export-sales-btn" class="btn-action">Export Sales</button>
+                </div>
+                <div class="table-container">
+                    <table id="sales-table">
+                        <thead>
+                            <tr>
+                                <th>Sno</th>
+                                <th>Item Code</th>
+                                <th>Product Name</th>
+                                <th>Product Price</th>
+                                <th>Product Quantity</th>
+                                <th>Remark</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="activity-log-tab" class="tab-pane">
+                <div class="table-container">
+                    <table id="log-table">
+                        <thead>
+                            <tr>
+                                <th>Sno</th>
+                                <th>Username</th>
+                                <th>Event</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="whatsapp-tab" class="tab-pane">
+                <h3>Generate Stock Status for WhatsApp</h3>
+                <div id="whatsapp-generator">
+                    <textarea id="whatsapp-message" readonly></textarea>
+                    <button id="copy-whatsapp-btn">Copy to Clipboard</button>
+                </div>
+            </div>
+
+            <div id="admin-tab" class="tab-pane admin-feature">
+                <div class="btn-group">
+                    <button id="add-executive-btn" class="btn-action">Add New Executive</button>
+                </div>
+                <h3>Executive Users</h3>
+                <div class="table-container">
+                    <table id="executives-table">
+                        <thead>
+                            <tr>
+                                <th>Sno</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2 id="product-modal-title">Add Product</h2>
+            <form id="product-form">
+                <input type="hidden" id="product-id">
+                <div class="form-group">
+                    <label for="item-code">Item Code</label>
+                    <input type="text" id="item-code" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-name">Product Name</label>
+                    <input type="text" id="product-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-price">Product Price</label>
+                    <input type="number" id="product-price" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-quantity">Product Quantity</label>
+                    <input type="number" id="product-quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="product-remark">Remark</label>
+                    <input type="text" id="product-remark">
+                </div>
+                <button type="submit" id="save-product-btn">Save Product</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="sale-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2 id="sale-modal-title">Add New Sale</h2>
+            <form id="sale-form">
+                <div class="form-group">
+                    <label for="sale-item-code">Item Code</label>
+                    <input type="text" id="sale-item-code" required>
+                </div>
+                <div class="form-group">
+                    <label for="sale-product-name">Product Name</label>
+                    <input type="text" id="sale-product-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="sale-product-price">Product Price</label>
+                    <input type="number" id="sale-product-price" required>
+                </div>
+                <div class="form-group">
+                    <label for="sale-product-quantity">Product Quantity</label>
+                    <input type="number" id="sale-product-quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="sale-product-remark">Remark</label>
+                    <input type="text" id="sale-product-remark">
+                </div>
+                <button type="submit">Add Sale</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="executive-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Add New Executive</h2>
+            <form id="executive-form">
+                <div class="form-group">
+                    <label for="executive-username">Username</label>
+                    <input type="text" id="executive-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="executive-password">Password</label>
+                    <input type="password" id="executive-password" required>
+                </div>
+                <button type="submit">Add Executive</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const loginPage = document.getElementById('login-page');
+            const dashboardPage = document.getElementById('dashboard-page');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const currentUserRoleSpan = document.getElementById('current-user-role');
+            const currentUserNameSpan = document.getElementById('current-user-name');
+            const tabButtons = document.querySelectorAll('.nav-tabs .tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            const productsTableBody = document.querySelector('#products-table tbody');
+            const salesTableBody = document.querySelector('#sales-table tbody');
+            const executivesTableBody = document.querySelector('#executives-table tbody');
+            const logTableBody = document.querySelector('#log-table tbody');
+            const addProductBtn = document.getElementById('add-product-btn');
+            const addSaleBtn = document.getElementById('add-sale-btn');
+            const addExecutiveBtn = document.getElementById('add-executive-btn');
+            const exportProductsBtn = document.getElementById('export-products-btn');
+            const exportSalesBtn = document.getElementById('export-sales-btn');
+            const productModal = document.getElementById('product-modal');
+            const saleModal = document.getElementById('sale-modal');
+            const executiveModal = document.getElementById('executive-modal');
+            const productModalClose = productModal.querySelector('.modal-close');
+            const saleModalClose = saleModal.querySelector('.modal-close');
+            const executiveModalClose = executiveModal.querySelector('.modal-close');
+            const productForm = document.getElementById('product-form');
+            const saleForm = document.getElementById('sale-form');
+            const executiveForm = document.getElementById('executive-form');
+            const productModalTitle = document.getElementById('product-modal-title');
+            const whatsappMessageTextarea = document.getElementById('whatsapp-message');
+            const copyWhatsappBtn = document.getElementById('copy-whatsapp-btn');
+            const toastContainer = document.getElementById('toast-container');
+
+            // --- Data Keys & Global State ---
+            const USERS_KEY = 'gloled_users';
+            const PRODUCTS_KEY = 'gloled_products';
+            const SALES_KEY = 'gloled_sales';
+            const LOGS_KEY = 'gloled_logs';
+            let currentUser = null;
+
+            // --- Helper Functions ---
+            function getInitialData() {
+                let users = JSON.parse(localStorage.getItem(USERS_KEY));
+                if (!users) {
+                    users = [
+                        { username: 'Abhishek', password: 'Kondapur@123', role: 'admin' },
+                        { username: 'Gopal', password: 'Kondapur@123', role: 'admin' }
+                    ];
+                    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+                }
+                if (!localStorage.getItem(PRODUCTS_KEY)) {
+                    localStorage.setItem(PRODUCTS_KEY, JSON.stringify([
+                        { id: 1, itemCode: 'GL-101', productName: 'LED Bulb 9W', productPrice: 150, productQuantity: 100, remark: 'In Stock' },
+                        { id: 2, itemCode: 'GL-102', productName: 'LED Tube Light', productPrice: 450, productQuantity: 50, remark: 'In Stock' }
+                    ]));
+                }
+                if (!localStorage.getItem(SALES_KEY)) {
+                    localStorage.setItem(SALES_KEY, JSON.stringify([]));
+                }
+                if (!localStorage.getItem(LOGS_KEY)) {
+                    localStorage.setItem(LOGS_KEY, JSON.stringify([]));
+                }
+            }
+            getInitialData();
+
+            function saveData(key, data) {
+                localStorage.setItem(key, JSON.stringify(data));
+            }
+
+            function getData(key) {
+                return JSON.parse(localStorage.getItem(key)) || [];
+            }
+            
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = `toast`;
+                toast.innerText = message;
+                toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 500);
+                }, 3000);
+            }
+
+            function logEvent(event) {
+                const logs = getData(LOGS_KEY);
+                logs.unshift({
+                    username: currentUser ? currentUser.username : 'N/A',
+                    event: event,
+                    timestamp: new Date().toLocaleString()
+                });
+                saveData(LOGS_KEY, logs);
+                renderActivityLog();
+            }
+
+            // --- UI Rendering ---
+            function renderTables() {
+                renderProducts();
+                renderSales();
+                renderActivityLog();
+                generateWhatsAppMessage();
+                if (currentUser && currentUser.role === 'admin') {
+                    renderExecutives();
+                }
+            }
+
+            function renderProducts() {
+                const products = getData(PRODUCTS_KEY);
+                productsTableBody.innerHTML = '';
+                products.forEach((product, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${product.itemCode}</td>
+                        <td>${product.productName}</td>
+                        <td>${product.productPrice.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</td>
+                        <td>${product.productQuantity}</td>
+                        <td>${product.remark || '-'}</td>
+                        <td class="admin-feature actions">
+                            <button class="edit-btn btn-action" data-id="${product.id}">Edit</button>
+                            <button class="delete-btn btn-action" data-id="${product.id}">Delete</button>
+                        </td>
+                    `;
+                    productsTableBody.appendChild(row);
+                });
+                updateAccessControl();
+            }
+
+            function renderSales() {
+                const sales = getData(SALES_KEY);
+                salesTableBody.innerHTML = '';
+                sales.forEach((sale, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${sale.itemCode}</td>
+                        <td>${sale.productName}</td>
+                        <td>${sale.productPrice.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</td>
+                        <td>${sale.productQuantity}</td>
+                        <td>${sale.remark || '-'}</td>
+                        <td>${sale.timestamp}</td>
+                    `;
+                    salesTableBody.appendChild(row);
+                });
+            }
+
+            function renderExecutives() {
+                const users = getData(USERS_KEY).filter(user => user.role === 'executive');
+                executivesTableBody.innerHTML = '';
+                users.forEach((user, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${user.username}</td>
+                        <td>${user.role}</td>
+                    `;
+                    executivesTableBody.appendChild(row);
+                });
+                updateAccessControl();
+            }
+
+            function renderActivityLog() {
+                const logs = getData(LOGS_KEY);
+                logTableBody.innerHTML = '';
+                logs.forEach((log, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${log.username}</td>
+                        <td>${log.event}</td>
+                        <td>${log.timestamp}</td>
+                    `;
+                    logTableBody.appendChild(row);
+                });
+            }
+
+            function switchTab(tabId) {
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            }
+
+            function updateAccessControl() {
+                const adminFeatures = document.querySelectorAll('.admin-feature');
+                if (currentUser && currentUser.role === 'admin') {
+                    adminFeatures.forEach(el => el.style.display = 'block');
+                } else {
+                    adminFeatures.forEach(el => el.style.display = 'none');
+                    if (document.getElementById('admin-tab').classList.contains('active')) {
+                        switchTab('products');
+                    }
+                }
+            }
+
+            // --- Form Validations ---
+            function validateProductForm() {
+                const itemCode = document.getElementById('item-code').value;
+                const productName = document.getElementById('product-name').value;
+                const price = parseFloat(document.getElementById('product-price').value);
+                const quantity = parseInt(document.getElementById('product-quantity').value);
+
+                if (!itemCode || !productName || isNaN(price) || isNaN(quantity) || price <= 0 || quantity < 0) {
+                    alert('Please fill all fields with valid data.');
+                    return false;
+                }
+                return true;
+            }
+            
+            function validateSaleForm() {
+                const itemCode = document.getElementById('sale-item-code').value;
+                const productName = document.getElementById('sale-product-name').value;
+                const price = parseFloat(document.getElementById('sale-product-price').value);
+                const quantity = parseInt(document.getElementById('sale-product-quantity').value);
+
+                if (!itemCode || !productName || isNaN(price) || isNaN(quantity) || price <= 0 || quantity < 0) {
+                    alert('Please fill all fields with valid data.');
+                    return false;
+                }
+                return true;
+            }
+
+            // --- Event Listeners ---
+            loginBtn.addEventListener('click', () => {
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                const users = getData(USERS_KEY);
+                const user = users.find(u => u.username === username && u.password === password);
+
+                if (user) {
+                    currentUser = user;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    loginPage.style.display = 'none';
+                    dashboardPage.style.display = 'block';
+                    currentUserNameSpan.textContent = currentUser.username;
+                    currentUserRoleSpan.textContent = currentUser.role;
+                    logEvent('Logged in');
+                    updateAccessControl();
+                    renderTables();
+                    showToast(`Welcome, ${currentUser.username}!`);
+                } else {
+                    alert('Invalid username or password.');
+                }
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                logEvent('Logged out');
+                localStorage.removeItem('currentUser');
+                currentUser = null;
+                loginPage.style.display = 'flex';
+                dashboardPage.style.display = 'none';
+                usernameInput.value = '';
+                passwordInput.value = '';
+            });
+
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const tabId = e.target.id.replace('tab-', '');
+                    switchTab(tabId);
+                });
+            });
+
+            addProductBtn.addEventListener('click', () => {
+                productForm.reset();
+                productModal.style.display = 'flex';
+                productModalTitle.textContent = 'Add Product';
+                productForm.dataset.mode = 'add';
+            });
+            
+            addSaleBtn.addEventListener('click', () => {
+                saleForm.reset();
+                saleModal.style.display = 'flex';
+            });
+
+            addExecutiveBtn.addEventListener('click', () => {
+                executiveForm.reset();
+                executiveModal.style.display = 'flex';
+            });
+
+            exportProductsBtn.addEventListener('click', () => exportData(PRODUCTS_KEY, 'GloLED_Stock_Report'));
+            exportSalesBtn.addEventListener('click', () => exportData(SALES_KEY, 'GloLED_Sales_Report'));
+
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', (e) => e.target.closest('.modal').style.display = 'none');
+            });
+            window.addEventListener('click', (e) => {
+                if (e.target === productModal) productModal.style.display = 'none';
+                if (e.target === saleModal) saleModal.style.display = 'none';
+                if (e.target === executiveModal) executiveModal.style.display = 'none';
+            });
+
+            // Handle product form submission (Add/Edit)
+            productForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (!validateProductForm()) return;
+                const mode = productForm.dataset.mode;
+                let products = getData(PRODUCTS_KEY);
+                const newProduct = {
+                    itemCode: document.getElementById('item-code').value,
+                    productName: document.getElementById('product-name').value,
+                    productPrice: parseFloat(document.getElementById('product-price').value),
+                    productQuantity: parseInt(document.getElementById('product-quantity').value),
+                    remark: document.getElementById('product-remark').value
+                };
+
+                if (mode === 'add') {
+                    newProduct.id = Date.now();
+                    products.push(newProduct);
+                    showToast('Product added successfully!');
+                    logEvent(`Added product: ${newProduct.productName}`);
+                } else if (mode === 'edit') {
+                    const idToUpdate = parseInt(document.getElementById('product-id').value);
+                    products = products.map(p => p.id === idToUpdate ? { ...p, ...newProduct } : p);
+                    showToast('Product updated successfully!');
+                    logEvent(`Updated product: ${newProduct.productName}`);
+                }
+                saveData(PRODUCTS_KEY, products);
+                renderTables();
+                productModal.style.display = 'none';
+            });
+            
+            // Handle sale form submission
+            saleForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (!validateSaleForm()) return;
+                const sales = getData(SALES_KEY);
+                const products = getData(PRODUCTS_KEY);
+                const newSale = {
+                    itemCode: document.getElementById('sale-item-code').value,
+                    productName: document.getElementById('sale-product-name').value,
+                    productPrice: parseFloat(document.getElementById('sale-product-price').value),
+                    productQuantity: parseInt(document.getElementById('sale-product-quantity').value),
+                    remark: document.getElementById('sale-product-remark').value,
+                    timestamp: new Date().toLocaleString()
+                };
+                
+                // Update stock
+                const product = products.find(p => p.itemCode === newSale.itemCode);
+                if (product) {
+                    if (product.productQuantity >= newSale.productQuantity) {
+                        product.productQuantity -= newSale.productQuantity;
+                        sales.push(newSale);
+                        saveData(PRODUCTS_KEY, products);
+                        saveData(SALES_KEY, sales);
+                        renderTables();
+                        saleModal.style.display = 'none';
+                        logEvent(`Recorded sale: ${newSale.productName} (Qty: ${newSale.productQuantity})`);
+                        showToast('Sale added successfully!');
+                    } else {
+                        alert('Insufficient stock!');
+                    }
+                } else {
+                    alert('Product not found in stock!');
+                }
+            });
+
+            // Handle executive form submission
+            executiveForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = document.getElementById('executive-username').value;
+                const password = document.getElementById('executive-password').value;
+                const users = getData(USERS_KEY);
+                if (users.find(u => u.username === username)) {
+                    alert('Username already exists!');
+                    return;
+                }
+                users.push({ username, password, role: 'executive' });
+                saveData(USERS_KEY, users);
+                renderExecutives();
+                executiveModal.style.display = 'none';
+                logEvent(`Added new executive: ${username}`);
+                showToast('Executive user created successfully!');
+            });
+            
+            // Edit/Delete actions for products
+            productsTableBody.addEventListener('click', (e) => {
+                if (e.target.classList.contains('edit-btn')) {
+                    const id = parseInt(e.target.dataset.id);
+                    const product = getData(PRODUCTS_KEY).find(p => p.id === id);
+                    if (product) {
+                        productModalTitle.textContent = 'Edit Product';
+                        productForm.dataset.mode = 'edit';
+                        document.getElementById('product-id').value = product.id;
+                        document.getElementById('item-code').value = product.itemCode;
+                        document.getElementById('product-name').value = product.productName;
+                        document.getElementById('product-price').value = product.productPrice;
+                        document.getElementById('product-quantity').value = product.productQuantity;
+                        document.getElementById('product-remark').value = product.remark;
+                        productModal.style.display = 'flex';
+                    }
+                } else if (e.target.classList.contains('delete-btn')) {
+                    if (confirm('Are you sure you want to delete this product?')) {
+                        const id = parseInt(e.target.dataset.id);
+                        let products = getData(PRODUCTS_KEY);
+                        products = products.filter(p => p.id !== id);
+                        saveData(PRODUCTS_KEY, products);
+                        renderProducts();
+                        logEvent(`Deleted product with ID: ${id}`);
+                        showToast('Product deleted successfully!');
+                    }
+                }
+            });
+
+            // --- WhatsApp & Export Functions ---
+            function generateWhatsAppMessage() {
+                const products = getData(PRODUCTS_KEY);
+                const date = new Date().toLocaleDateString();
+                let message = `*GloLED Store - Stock Status*\nDate: ${date}\n\n`;
+                products.forEach((product, index) => {
+                    message += `*${index + 1}. ${product.productName}*\n`;
+                    message += `   • Item Code: ${product.itemCode}\n`;
+                    message += `   • Quantity: ${product.productQuantity}\n`;
+                    message += `   • Price: ₹${product.productPrice}\n\n`;
+                });
+                whatsappMessageTextarea.value = message;
+            }
+
+            copyWhatsappBtn.addEventListener('click', () => {
+                whatsappMessageTextarea.select();
+                document.execCommand('copy');
+                showToast('Message copied to clipboard!');
+            });
+
+            function exportData(key, filename) {
+                const data = getData(key);
+                if (data.length === 0) {
+                    alert('No data to export.');
+                    return;
+                }
+                const headers = Object.keys(data[0]).join(',');
+                const rows = data.map(item => Object.values(item).map(v => `"${v}"`).join(',')).join('\n');
+                const csv = headers + '\n' + rows;
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `${filename}_${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast('Export complete! (CSV format)');
+                logEvent(`Exported ${key.replace('gloled_', '')} data`);
+            }
+
+            // --- Initial Check ---
+            function checkAuth() {
+                currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (currentUser) {
+                    loginPage.style.display = 'none';
+                    dashboardPage.style.display = 'block';
+                    currentUserNameSpan.textContent = currentUser.username;
+                    currentUserRoleSpan.textContent = currentUser.role;
+                    renderTables();
+                } else {
+                    loginPage.style.display = 'flex';
+                    dashboardPage.style.display = 'none';
+                }
+            }
+
+            checkAuth();
+        });
+    </script>
+
+</body>
+</html>
