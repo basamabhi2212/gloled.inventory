@@ -14,6 +14,7 @@
             --success-color: #28a745;
             --danger-color: #dc3545;
             --info-color: #007bff;
+            --warning-color: #ffc107;
         }
 
         * {
@@ -232,6 +233,10 @@
             max-width: 500px;
             position: relative;
         }
+        
+        #sale-modal .modal-content {
+            max-width: 700px;
+        }
 
         .modal-close {
             position: absolute;
@@ -295,12 +300,53 @@
             border-radius: 5px;
             border: 1px solid var(--border-color);
         }
+
+        .sale-item-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr 1fr 100px;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
         
+        .sale-item-row input, .sale-item-row span {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .sale-item-row .delete-item-btn {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: auto;
+        }
+        .sale-item-row .delete-item-btn:hover {
+            background-color: #c82333;
+        }
+
+        #estimation-container {
+            text-align: right;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        
+        .sale-item-summary {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Responsive styles */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
             }
-            .container, .login-container {
+            .container, .login-container, .modal-content {
                 padding: 15px;
             }
             header {
@@ -317,11 +363,15 @@
             .btn-group {
                 flex-direction: column;
             }
+            .sale-item-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
 
+    <!-- Login Page -->
     <div id="login-page" class="login-container">
         <h2>GloLED Store Inventory</h2>
         <div class="form-group">
@@ -335,6 +385,7 @@
         <button id="login-btn">Login</button>
     </div>
 
+    <!-- Main Dashboard -->
     <div id="dashboard-page" class="container dashboard-content">
         <header>
             <h1>Inventory Management</h1>
@@ -353,6 +404,7 @@
         </nav>
 
         <main class="tab-content">
+            <!-- Product List Tab -->
             <div id="products-tab" class="tab-pane active">
                 <div class="btn-group">
                     <button id="add-product-btn" class="btn-action admin-feature">Add Product</button>
@@ -372,11 +424,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            </tbody>
+                            <!-- Product rows will be dynamically inserted here -->
+                        </tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- Sales List Tab -->
             <div id="sales-tab" class="tab-pane">
                 <div class="btn-group">
                     <button id="add-sale-btn" class="btn-action">Add New Sale</button>
@@ -387,20 +441,21 @@
                         <thead>
                             <tr>
                                 <th>Sno</th>
-                                <th>Item Code</th>
-                                <th>Product Name</th>
-                                <th>Product Price</th>
-                                <th>Product Quantity</th>
-                                <th>Remark</th>
+                                <th>Bill ID</th>
+                                <th>Total Items</th>
+                                <th>Total Price</th>
                                 <th>Date</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            </tbody>
+                            <!-- Sales rows will be dynamically inserted here -->
+                        </tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- Activity Log Tab -->
             <div id="activity-log-tab" class="tab-pane">
                 <div class="table-container">
                     <table id="log-table">
@@ -413,11 +468,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            </tbody>
+                            <!-- Log entries will be dynamically inserted here -->
+                        </tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- WhatsApp Generator Tab -->
             <div id="whatsapp-tab" class="tab-pane">
                 <h3>Generate Stock Status for WhatsApp</h3>
                 <div id="whatsapp-generator">
@@ -426,6 +483,7 @@
                 </div>
             </div>
 
+            <!-- Admin Panel Tab -->
             <div id="admin-tab" class="tab-pane admin-feature">
                 <div class="btn-group">
                     <button id="add-executive-btn" class="btn-action">Add New Executive</button>
@@ -441,13 +499,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            </tbody>
+                            <!-- Executive user rows will be dynamically inserted here -->
+                        </tbody>
                     </table>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Product Modal (Add/Edit) -->
     <div id="product-modal" class="modal">
         <div class="modal-content">
             <span class="modal-close">&times;</span>
@@ -464,7 +524,7 @@
                 </div>
                 <div class="form-group">
                     <label for="product-price">Product Price</label>
-                    <input type="number" id="product-price" required>
+                    <input type="number" id="product-price" step="0.01" required>
                 </div>
                 <div class="form-group">
                     <label for="product-quantity">Product Quantity</label>
@@ -479,36 +539,28 @@
         </div>
     </div>
     
+    <!-- Sale Modal (Add) -->
     <div id="sale-modal" class="modal">
         <div class="modal-content">
             <span class="modal-close">&times;</span>
-            <h2 id="sale-modal-title">Add New Sale</h2>
+            <h2 id="sale-modal-title">Create New Bill</h2>
             <form id="sale-form">
-                <div class="form-group">
-                    <label for="sale-item-code">Item Code</label>
-                    <input type="text" id="sale-item-code" required>
+                <div id="sale-items-container">
+                    <!-- Dynamic sale rows will be added here -->
                 </div>
-                <div class="form-group">
-                    <label for="sale-product-name">Product Name</label>
-                    <input type="text" id="sale-product-name" required>
+                <div class="btn-group" style="justify-content: space-between; margin-top: 20px;">
+                    <button type="button" id="add-sale-row-btn" class="btn-action" style="background-color: var(--success-color);">Add Product</button>
+                    <button type="button" id="estimate-btn" class="btn-action" style="background-color: var(--info-color);">Estimation</button>
                 </div>
-                <div class="form-group">
-                    <label for="sale-product-price">Product Price</label>
-                    <input type="number" id="sale-product-price" required>
+                <div id="estimation-container" style="display: none;">
+                    Total: <span id="total-estimation-price">₹0.00</span>
                 </div>
-                <div class="form-group">
-                    <label for="sale-product-quantity">Product Quantity</label>
-                    <input type="number" id="sale-product-quantity" required>
-                </div>
-                <div class="form-group">
-                    <label for="sale-product-remark">Remark</label>
-                    <input type="text" id="sale-product-remark">
-                </div>
-                <button type="submit">Add Sale</button>
+                <button type="submit" id="create-bill-btn" style="margin-top: 20px;">Create Bill</button>
             </form>
         </div>
     </div>
 
+    <!-- Executive Modal (Add) -->
     <div id="executive-modal" class="modal">
         <div class="modal-content">
             <span class="modal-close">&times;</span>
@@ -527,6 +579,41 @@
         </div>
     </div>
 
+    <!-- Bill Details Modal (View) -->
+    <div id="bill-details-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2>Bill Details (<span id="bill-details-id"></span>)</h2>
+            <div class="table-container">
+                <table id="bill-details-table">
+                    <thead>
+                        <tr>
+                            <th>Sno</th>
+                            <th>Item Code</th>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <h2>Confirm Bill</h2>
+            <p style="text-align: center; margin-bottom: 20px;">Are you sure you want to create this bill?</p>
+            <div class="btn-group" style="justify-content: center;">
+                <button id="confirm-ok-btn" class="btn-action" style="background-color: var(--success-color);">OK</button>
+                <button id="confirm-cancel-btn" class="btn-action" style="background-color: var(--danger-color);">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
     <div id="toast-container"></div>
 
     <script>
@@ -564,6 +651,19 @@
             const whatsappMessageTextarea = document.getElementById('whatsapp-message');
             const copyWhatsappBtn = document.getElementById('copy-whatsapp-btn');
             const toastContainer = document.getElementById('toast-container');
+            const addSaleRowBtn = document.getElementById('add-sale-row-btn');
+            const saleItemsContainer = document.getElementById('sale-items-container');
+            const estimateBtn = document.getElementById('estimate-btn');
+            const totalEstimationPrice = document.getElementById('total-estimation-price');
+            const estimationContainer = document.getElementById('estimation-container');
+            const createBillBtn = document.getElementById('create-bill-btn');
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmOkBtn = document.getElementById('confirm-ok-btn');
+            const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+            const billDetailsModal = document.getElementById('bill-details-modal');
+            const billDetailsTableBody = document.querySelector('#bill-details-table tbody');
+            const billDetailsModalClose = billDetailsModal.querySelector('.modal-close');
+            const billDetailsIdSpan = document.getElementById('bill-details-id');
 
             // --- Data Keys & Global State ---
             const USERS_KEY = 'gloled_users';
@@ -650,7 +750,7 @@
                         <td>${index + 1}</td>
                         <td>${product.itemCode}</td>
                         <td>${product.productName}</td>
-                        <td>${product.productPrice.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</td>
+                        <td>₹${product.productPrice.toFixed(2)}</td>
                         <td>${product.productQuantity}</td>
                         <td>${product.remark || '-'}</td>
                         <td class="admin-feature actions">
@@ -666,16 +766,17 @@
             function renderSales() {
                 const sales = getData(SALES_KEY);
                 salesTableBody.innerHTML = '';
-                sales.forEach((sale, index) => {
+                sales.forEach((bill, index) => {
                     const row = document.createElement('tr');
+                    const totalItems = bill.items.reduce((sum, item) => sum + item.quantity, 0);
+                    const totalPrice = bill.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                     row.innerHTML = `
                         <td>${index + 1}</td>
-                        <td>${sale.itemCode}</td>
-                        <td>${sale.productName}</td>
-                        <td>${sale.productPrice.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}</td>
-                        <td>${sale.productQuantity}</td>
-                        <td>${sale.remark || '-'}</td>
-                        <td>${sale.timestamp}</td>
+                        <td>${bill.billId}</td>
+                        <td>${totalItems}</td>
+                        <td>₹${totalPrice.toFixed(2)}</td>
+                        <td>${bill.timestamp}</td>
+                        <td><button class="view-bill-btn btn-action" data-bill-id="${bill.billId}">View Details</button></td>
                     `;
                     salesTableBody.appendChild(row);
                 });
@@ -730,31 +831,170 @@
                 }
             }
 
-            // --- Form Validations ---
-            function validateProductForm() {
-                const itemCode = document.getElementById('item-code').value;
-                const productName = document.getElementById('product-name').value;
-                const price = parseFloat(document.getElementById('product-price').value);
-                const quantity = parseInt(document.getElementById('product-quantity').value);
+            function addSaleRow() {
+                const newRow = document.createElement('div');
+                newRow.className = 'sale-item-row';
+                newRow.innerHTML = `
+                    <div class="form-group">
+                        <label>Item Code</label>
+                        <input type="text" class="sale-item-code-input" placeholder="Item Code" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input type="text" class="sale-product-name-input" placeholder="Product Name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Price</label>
+                        <input type="number" step="0.01" class="sale-product-price-input" placeholder="Price" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" min="1" value="1" class="sale-product-quantity-input" placeholder="Quantity" required>
+                        <span class="stock-info" style="font-size: 0.8em; color: #888;"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="button" class="delete-item-btn">Delete</button>
+                    </div>
+                `;
+                saleItemsContainer.appendChild(newRow);
 
-                if (!itemCode || !productName || isNaN(price) || isNaN(quantity) || price <= 0 || quantity < 0) {
-                    alert('Please fill all fields with valid data.');
-                    return false;
-                }
-                return true;
+                const itemCodeInput = newRow.querySelector('.sale-item-code-input');
+                const productNameInput = newRow.querySelector('.sale-product-name-input');
+                const productPriceInput = newRow.querySelector('.sale-product-price-input');
+                const productQuantityInput = newRow.querySelector('.sale-product-quantity-input');
+                const stockInfoSpan = newRow.querySelector('.stock-info');
+                const deleteBtn = newRow.querySelector('.delete-item-btn');
+
+                itemCodeInput.addEventListener('input', () => {
+                    const products = getData(PRODUCTS_KEY);
+                    const product = products.find(p => p.itemCode === itemCodeInput.value);
+                    if (product) {
+                        productNameInput.value = product.productName;
+                        productPriceInput.value = product.productPrice;
+                        stockInfoSpan.textContent = `Available: ${product.productQuantity}`;
+                    } else {
+                        productNameInput.value = '';
+                        productPriceInput.value = '';
+                        stockInfoSpan.textContent = 'Not Found';
+                    }
+                });
+
+                deleteBtn.addEventListener('click', () => {
+                    newRow.remove();
+                    calculateEstimation();
+                });
             }
-            
-            function validateSaleForm() {
-                const itemCode = document.getElementById('sale-item-code').value;
-                const productName = document.getElementById('sale-product-name').value;
-                const price = parseFloat(document.getElementById('sale-product-price').value);
-                const quantity = parseInt(document.getElementById('sale-product-quantity').value);
 
-                if (!itemCode || !productName || isNaN(price) || isNaN(quantity) || price <= 0 || quantity < 0) {
-                    alert('Please fill all fields with valid data.');
-                    return false;
+            function calculateEstimation() {
+                let total = 0;
+                const saleRows = document.querySelectorAll('.sale-item-row');
+                saleRows.forEach(row => {
+                    const price = parseFloat(row.querySelector('.sale-product-price-input').value) || 0;
+                    const quantity = parseInt(row.querySelector('.sale-product-quantity-input').value) || 0;
+                    total += price * quantity;
+                });
+                totalEstimationPrice.textContent = `₹${total.toFixed(2)}`;
+                estimationContainer.style.display = saleRows.length > 0 ? 'block' : 'none';
+            }
+
+            function createBill() {
+                const saleRows = document.querySelectorAll('.sale-item-row');
+                const products = getData(PRODUCTS_KEY);
+                const sales = getData(SALES_KEY);
+                const newBillItems = [];
+                let hasErrors = false;
+
+                saleRows.forEach(row => {
+                    const itemCode = row.querySelector('.sale-item-code-input').value;
+                    const productName = row.querySelector('.sale-product-name-input').value;
+                    const price = parseFloat(row.querySelector('.sale-product-price-input').value);
+                    const quantity = parseInt(row.querySelector('.sale-product-quantity-input').value);
+                    const stockProduct = products.find(p => p.itemCode === itemCode);
+
+                    if (!itemCode || !productName || isNaN(price) || isNaN(quantity) || quantity <= 0) {
+                        showToast('Please fill all fields in each row.', 'warning');
+                        hasErrors = true;
+                        return;
+                    }
+
+                    if (!stockProduct || stockProduct.productQuantity < quantity) {
+                        showToast(`Insufficient stock for ${productName}.`, 'warning');
+                        hasErrors = true;
+                        return;
+                    }
+
+                    newBillItems.push({ itemCode, productName, price, quantity });
+                });
+
+                if (hasErrors || newBillItems.length === 0) {
+                    if (newBillItems.length === 0 && !hasErrors) {
+                         showToast('Please add at least one product.', 'warning');
+                    }
+                    return;
                 }
-                return true;
+
+                const billId = Date.now();
+                const newBill = {
+                    billId: billId,
+                    timestamp: new Date().toLocaleString(),
+                    items: newBillItems
+                };
+
+                // Deduct stock
+                products.forEach(p => {
+                    const soldItem = newBillItems.find(item => item.itemCode === p.itemCode);
+                    if (soldItem) {
+                        p.productQuantity -= soldItem.quantity;
+                    }
+                });
+
+                sales.unshift(newBill);
+                saveData(PRODUCTS_KEY, products);
+                saveData(SALES_KEY, sales);
+                
+                saleModal.style.display = 'none';
+                saleItemsContainer.innerHTML = '';
+                estimationContainer.style.display = 'none';
+                renderTables();
+                logEvent(`Created new bill (ID: ${billId})`);
+                showToast('Bill created successfully!');
+            }
+
+            // --- Export Functionality ---
+            function exportData(key, filename) {
+                const data = getData(key);
+                if (data.length === 0) {
+                    alert('No data to export.');
+                    return;
+                }
+                
+                let csv = '';
+                if (key === SALES_KEY) {
+                    const headers = ['Bill ID', 'Timestamp', 'Item Code', 'Product Name', 'Price', 'Quantity'];
+                    csv += headers.join(',') + '\n';
+                    data.forEach(bill => {
+                        bill.items.forEach(item => {
+                            csv += `${bill.billId},"${bill.timestamp}",${item.itemCode},"${item.productName}",${item.price},${item.quantity}\n`;
+                        });
+                    });
+                } else {
+                    const headers = Object.keys(data[0]).join(',');
+                    const rows = data.map(item => Object.values(item).map(v => `"${v}"`).join(',')).join('\n');
+                    csv = headers + '\n' + rows;
+                }
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `${filename}_${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                showToast('Export complete! (CSV format)');
+                logEvent(`Exported ${key.replace('gloled_', '')} data`);
             }
 
             // --- Event Listeners ---
@@ -763,7 +1003,6 @@
                 const password = passwordInput.value;
                 const users = getData(USERS_KEY);
                 const user = users.find(u => u.username === username && u.password === password);
-
                 if (user) {
                     currentUser = user;
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -806,7 +1045,27 @@
             
             addSaleBtn.addEventListener('click', () => {
                 saleForm.reset();
+                saleItemsContainer.innerHTML = '';
+                estimationContainer.style.display = 'none';
+                addSaleRow();
                 saleModal.style.display = 'flex';
+            });
+
+            addSaleRowBtn.addEventListener('click', addSaleRow);
+            estimateBtn.addEventListener('click', calculateEstimation);
+
+            createBillBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                confirmModal.style.display = 'flex';
+            });
+
+            confirmOkBtn.addEventListener('click', () => {
+                confirmModal.style.display = 'none';
+                createBill();
+            });
+
+            confirmCancelBtn.addEventListener('click', () => {
+                confirmModal.style.display = 'none';
             });
 
             addExecutiveBtn.addEventListener('click', () => {
@@ -824,12 +1083,13 @@
                 if (e.target === productModal) productModal.style.display = 'none';
                 if (e.target === saleModal) saleModal.style.display = 'none';
                 if (e.target === executiveModal) executiveModal.style.display = 'none';
+                if (e.target === confirmModal) confirmModal.style.display = 'none';
+                if (e.target === billDetailsModal) billDetailsModal.style.display = 'none';
             });
 
             // Handle product form submission (Add/Edit)
             productForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                if (!validateProductForm()) return;
                 const mode = productForm.dataset.mode;
                 let products = getData(PRODUCTS_KEY);
                 const newProduct = {
@@ -839,7 +1099,6 @@
                     productQuantity: parseInt(document.getElementById('product-quantity').value),
                     remark: document.getElementById('product-remark').value
                 };
-
                 if (mode === 'add') {
                     newProduct.id = Date.now();
                     products.push(newProduct);
@@ -854,41 +1113,6 @@
                 saveData(PRODUCTS_KEY, products);
                 renderTables();
                 productModal.style.display = 'none';
-            });
-            
-            // Handle sale form submission
-            saleForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (!validateSaleForm()) return;
-                const sales = getData(SALES_KEY);
-                const products = getData(PRODUCTS_KEY);
-                const newSale = {
-                    itemCode: document.getElementById('sale-item-code').value,
-                    productName: document.getElementById('sale-product-name').value,
-                    productPrice: parseFloat(document.getElementById('sale-product-price').value),
-                    productQuantity: parseInt(document.getElementById('sale-product-quantity').value),
-                    remark: document.getElementById('sale-product-remark').value,
-                    timestamp: new Date().toLocaleString()
-                };
-                
-                // Update stock
-                const product = products.find(p => p.itemCode === newSale.itemCode);
-                if (product) {
-                    if (product.productQuantity >= newSale.productQuantity) {
-                        product.productQuantity -= newSale.productQuantity;
-                        sales.push(newSale);
-                        saveData(PRODUCTS_KEY, products);
-                        saveData(SALES_KEY, sales);
-                        renderTables();
-                        saleModal.style.display = 'none';
-                        logEvent(`Recorded sale: ${newSale.productName} (Qty: ${newSale.productQuantity})`);
-                        showToast('Sale added successfully!');
-                    } else {
-                        alert('Insufficient stock!');
-                    }
-                } else {
-                    alert('Product not found in stock!');
-                }
             });
 
             // Handle executive form submission
@@ -909,6 +1133,31 @@
                 showToast('Executive user created successfully!');
             });
             
+            // View bill details
+            salesTableBody.addEventListener('click', (e) => {
+                if (e.target.classList.contains('view-bill-btn')) {
+                    const billId = parseInt(e.target.dataset.billId);
+                    const sales = getData(SALES_KEY);
+                    const bill = sales.find(b => b.billId === billId);
+                    if (bill) {
+                        billDetailsIdSpan.textContent = bill.billId;
+                        billDetailsTableBody.innerHTML = '';
+                        bill.items.forEach((item, index) => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${index + 1}</td>
+                                <td>${item.itemCode}</td>
+                                <td>${item.productName}</td>
+                                <td>₹${item.price.toFixed(2)}</td>
+                                <td>${item.quantity}</td>
+                            `;
+                            billDetailsTableBody.appendChild(row);
+                        });
+                        billDetailsModal.style.display = 'flex';
+                    }
+                }
+            });
+
             // Edit/Delete actions for products
             productsTableBody.addEventListener('click', (e) => {
                 if (e.target.classList.contains('edit-btn')) {
@@ -947,7 +1196,7 @@
                     message += `*${index + 1}. ${product.productName}*\n`;
                     message += `   • Item Code: ${product.itemCode}\n`;
                     message += `   • Quantity: ${product.productQuantity}\n`;
-                    message += `   • Price: ₹${product.productPrice}\n\n`;
+                    message += `   • Price: ₹${product.productPrice.toFixed(2)}\n\n`;
                 });
                 whatsappMessageTextarea.value = message;
             }
@@ -957,29 +1206,7 @@
                 document.execCommand('copy');
                 showToast('Message copied to clipboard!');
             });
-
-            function exportData(key, filename) {
-                const data = getData(key);
-                if (data.length === 0) {
-                    alert('No data to export.');
-                    return;
-                }
-                const headers = Object.keys(data[0]).join(',');
-                const rows = data.map(item => Object.values(item).map(v => `"${v}"`).join(',')).join('\n');
-                const csv = headers + '\n' + rows;
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', `${filename}_${new Date().toISOString().slice(0, 10)}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showToast('Export complete! (CSV format)');
-                logEvent(`Exported ${key.replace('gloled_', '')} data`);
-            }
-
+            
             // --- Initial Check ---
             function checkAuth() {
                 currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -998,6 +1225,5 @@
             checkAuth();
         });
     </script>
-
 </body>
 </html>
